@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block title %}Explore Bands{% endblock %}
+{% block content %}
+<!-- EXPLORE HEADER -->
+<section style="background: transparent, var(--brand-card)); padding:3rem 0; text-align:center">
+    <div class="container">
+        <h1 style="font-family:'Playfair Display',serif;font-weight:800;font-size:clamp(2rem,5vw,3.5rem);color: var(--bs-body-color);"
+            class="mb-3">
+            Discover <span class="text-primary">Incredible Bands</span>
+        </h1>
+        <p style="color: #94a3b8;font-size:1.1rem;max-width:600px;margin:0 auto">
+            Find the perfect soundtrack for your next event. Filter by genre, location, or price.
+        </p>
+    </div>
+</section>
+
+<!-- FILTER SECTION -->
+<div class="container py-4">
+    <div class="card bg-white shadow-sm border-0 p-3 mb-5">
+        <form method="get" class="row g-3 align-items-end">
+            <!-- Search Keyword -->
+            <div class="col-md-3">
+                <label class="form-label" style="color: #94a3b8;font-size:0.85rem;font-weight:600">Search
+                    Band</label>
+                <input type="text" name="q" class="form-control" placeholder="Name or keyword"
+                    value="{{ request.GET.q }}">
+            </div>
+            <!-- Event Type Filter -->
+            <div class="col-md-3">
+                <label class="form-label" style="color: #94a3b8;font-size:0.85rem;font-weight:600">Event
+                    Type</label>
+                <select name="event_type" class="form-select">
+                    <option value="">Any Event Type</option>
+                    <option value="wedding" {% if request.GET.event_type == 'wedding' %}selected{% endif %}>Wedding
+                    </option>
+                    <option value="corporate" {% if request.GET.event_type == 'corporate' %}selected{% endif %}>Corporate
+                    </option>
+                    <option value="college" {% if request.GET.event_type == 'college' %}selected{% endif %}>College
+                    </option>
+                    <option value="private" {% if request.GET.event_type == 'private' %}selected{% endif %}>Private Party
+                    </option>
+                </select>
+            </div>
+            <!-- Genre Filter -->
+            <div class="col-md-3">
+                <label class="form-label" style="color: #94a3b8;font-size:0.85rem;font-weight:600">Genre</label>
+                <select name="genre" class="form-select">
+                    <option value="">Any Genre</option>
+                    <option value="carnatic" {% if request.GET.genre == 'carnatic' %}selected{% endif %}>Carnatic</option>
+                    <option value="bollywood" {% if request.GET.genre == 'bollywood' %}selected{% endif %}>Bollywood</option>
+                    <option value="jazz" {% if request.GET.genre == 'jazz' %}selected{% endif %}>Jazz</option>
+                    <option value="rock" {% if request.GET.genre == 'rock' %}selected{% endif %}>Rock</option>
+                    <option value="pop" {% if request.GET.genre == 'pop' %}selected{% endif %}>Pop</option>
+                    <option value="folk" {% if request.GET.genre == 'folk' %}selected{% endif %}>Folk</option>
+                    <option value="classical" {% if request.GET.genre == 'classical' %}selected{% endif %}>Classical</option>
+                    <option value="western" {% if request.GET.genre == 'western' %}selected{% endif %}>Western</option>
+                    <option value="fusion" {% if request.GET.genre == 'fusion' %}selected{% endif %}>Fusion</option>
+                    <option value="devotional" {% if request.GET.genre == 'devotional' %}selected{% endif %}>Devotional</option>
+                    <option value="instrumental" {% if request.GET.genre == 'instrumental' %}selected{% endif %}>Instrumental</option>
+                    <option value="electronic" {% if request.GET.genre == 'electronic' %}selected{% endif %}>Electronic</option>
+                </select>
+            </div>
+            <!-- Submit -->
+            <div class="col-md-3 text-md-end">
+                <a href="{% url 'bands:explore' %}" class="btn btn-outline-primary fw-bold me-2">Clear</a>
+                <button type="submit" class="btn btn-primary fw-bold px-4">Apply Filters</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- BAND GRID -->
+    <style>
+        .band-card { border-radius:1.2rem !important; overflow:hidden; }
+        .band-card:hover { transform:translateY(-5px); }
+        .band-card-img { width:100%; height:240px; object-fit:cover; border-radius:1.2rem 1.2rem 0 0 !important; }
+        .band-card-placeholder { width:100%; height:240px; display:flex; align-items:center; justify-content:center; font-size:4rem; background:rgba(139,92,246,0.1); border-radius:1.2rem 1.2rem 0 0 !important; }
+        .band-card .badge { border-radius:20px; padding:4px 10px; font-weight:500; font-size:0.75rem; }
+    </style>
+    <div class="row g-4">
+        {% for band in bands %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card band-card bg-white shadow-sm border-0 h-100 d-flex flex-column">
+                <div class="position-relative">
+                    {% if band.get_thumbnail %}
+                    <img src="{{ band.get_thumbnail.url }}" class="band-card-img" alt="{{ band.band_name }}">
+                    {% else %}
+                    <div class="band-card-placeholder">🎵</div>
+                    {% endif %}
+                    <div
+                        style="position:absolute;top:15px;right:15px;background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);padding:5px 10px;border-radius:50px;font-size:0.85rem;color: var(--bs-body-color);font-weight:600;border:1px solid rgba(255,255,255,0.1)">
+                        <span style="color:#F59E0B">★</span> {{ band.average_rating|default:"0.0" }}
+                    </div>
+                </div>
+                <div class="p-4 d-flex flex-column flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 style="color: var(--bs-body-color);font-weight:700;margin:0">{{ band.band_name }}</h5>
+                    </div>
+                    <div style="color: #94a3b8;font-size:0.85rem;margin-bottom:1rem">
+                        <i class="bi bi-geo-alt me-1"></i>{{ band.base_location }}
+                    </div>
+
+                    <p
+                        style="color: #94a3b8;font-size:0.9rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+                        {{ band.description|truncatewords:20 }}
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-2 mb-4 mt-auto">
+                        {% for g in band.get_genres_display_list|slice:":3" %}
+                        <span class="badge bg-secondary">{{ g }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <a href="{% url 'bands:profile_detail' band.pk %}"
+                        class="btn btn-primary fw-bold w-100 text-center py-2" style="font-size:0.95rem">
+                        View Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 py-5 text-center">
+            <div style="font-size:4rem;opacity:0.5;margin-bottom:1rem">🔍</div>
+            <h4 style="color: var(--bs-body-color);font-weight:600">No bands found</h4>
+            <p style="color: #94a3b8;">We couldn't find any bands matching your current filters.</p>
+            <a href="{% url 'bands:explore' %}" class="btn btn-outline-primary fw-bold mt-3">Reset Filters</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- PAGINATION -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-5">
+        <ul class="pagination justify-content-center" style="gap:5px">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                    style="background: transparent;border-color: rgba(255,255,255,0.1);color: var(--bs-body-color);border-radius:8px">Prev</a>
+            </li>
+            {% endif %}
+
+            {% for i in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                <a class="page-link" href="?page={{ i }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{
+                    i }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}"
+                    style="background: transparent;border-color: rgba(255,255,255,0.1);color: var(--bs-body-color);border-radius:8px">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

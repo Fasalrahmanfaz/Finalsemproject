@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Submit Booking{% endblock %}
+
+{% block content %}
+<style>
+    .avail-result { padding:12px 16px; border-radius:10px; margin-top:12px; font-size:0.88rem; font-weight:600; display:none; }
+    .avail-result.available { background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.3); color:#22c55e; }
+    .avail-result.unavailable { background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#ef4444; }
+    .avail-loading { color:#a78bfa; font-size:0.85rem; display:none; margin-top:8px; }
+    .alt-bands { margin-top:16px; }
+    .alt-bands h6 { color:#c4b5fd !important; font-size:0.85rem; margin-bottom:10px; }
+    .alt-band-card { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:10px; background:rgba(30,41,59,0.6); border:1px solid rgba(255,255,255,0.06); margin-bottom:8px; transition:all 0.2s; text-decoration:none; }
+    .alt-band-card:hover { border-color:rgba(139,92,246,0.4); background:rgba(30,41,59,0.9); transform:translateX(3px); }
+    .alt-band-photo { width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid rgba(139,92,246,0.3); }
+    .alt-band-photo-placeholder { width:42px; height:42px; border-radius:50%; background:rgba(139,92,246,0.2); display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+    .alt-band-info { flex:1; }
+    .alt-band-name { color:#f1f5f9 !important; font-weight:600; font-size:0.85rem; margin:0; }
+    .alt-band-meta { color:#94a3b8 !important; font-size:0.75rem; margin:0; }
+    .alt-band-action { color:#a78bfa !important; font-size:0.78rem; font-weight:600; white-space:nowrap; }
+    .nearest-dates { margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
+    .nearest-date-chip { background:rgba(139,92,246,0.15); border:1px solid rgba(139,92,246,0.3); color:#c4b5fd !important; padding:4px 10px; border-radius:16px; font-size:0.75rem; cursor:pointer; transition:all 0.2s; }
+    .nearest-date-chip:hover { background:rgba(139,92,246,0.3); }
+</style>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-white shadow-sm border-0 p-4">
+                <h4 style="color: var(--bs-body-color);font-weight:700" class="mb-4">Book {{ band.band_name }}</h4>
+                <form method="post" id="bookingForm">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="avail-loading" id="availLoading"><i class="bi bi-arrow-repeat"></i> Checking availability...</div>
+                    <div class="avail-result" id="availResult"></div>
+                    <div class="alt-bands" id="altBands" style="display:none"></div>
+                    <button type="submit" class="btn btn-primary fw-bold mt-3 w-100" id="submitBtn">Submit Booking Request</button>
+                </form>
+            </div>
+            {% if date_unavailable and alternative_bands %}
+            <div class="card bg-white shadow-sm border-0 p-4 mt-4" style="border:1px solid rgba(139,92,246,0.3)">
+                <h5 style="color:var(--bs-body-color);font-weight:700;margin-bottom:1rem"><i class="bi bi-stars me-2" style="color:#8b5cf6"></i>Similar Bands Available on That Date</h5>
+                <div class="row g-3">
+                    {% for alt in alternative_bands %}
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center gap-3 p-3" style="background:rgba(30,41,59,0.6);border-radius:12px;border:1px solid rgba(255,255,255,0.06)">
+                            {% if alt.get_thumbnail %}
+                            <img src="{{ alt.get_thumbnail.url }}" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid rgba(139,92,246,0.3)">
+                            {% else %}
+                            <div style="width:50px;height:50px;border-radius:50%;background:rgba(139,92,246,0.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem">🎸</div>
+                            {% endif %}
+                            <div style="flex:1;min-width:0">
+                                <div style="font-weight:600;color:var(--bs-body-color);font-size:0.9rem">{{ alt.band_name }}</div>
+                                <div style="color:#94a3b8;font-size:0.75rem"><i class="bi bi-geo-alt me-1"></i>{{ alt.base_location }} • ⭐ {{ alt.average_rating }}</div>
+                            </div>
+                            <a href="{% url 'enquiries:submit_enquiry' alt.pk %}" class="btn btn-sm btn-primary" style="border-radius:8px;white-space:nowrap">Book →</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    var bandId = {{ band.pk }};
+    var checkTimeout = null;
+
+    function getCookie(name) {
+        var val = null;
+        document.cookie.split(';').forEach(function(c) {
+            c = c.trim();
+            if (c.startsWith(name + '=')) val = decodeURIComponent(c.substring(name.length + 1));
+        });
+        return val;
+    }
+
+    function checkAvailability(dateStr) {
+        if (!dateStr) return;
+        var loading = document.getElementById('availLoading');
+        var result = document.getElementById('availResult');
+        var altBands = document.getElementById('altBands');
+        loading.style.display = 'block';
+        result.style.display = 'none';
+        altBands.style.display = 'none';
+
+        fetch('/bands/check-availability/?band_id=' + bandId + '&date=' + dateStr)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                loading.style.display = 'none';
+                result.style.display = 'block';
+                if (data.available) {
+                    result.className = 'avail-result available';
+                    result.innerHTML = '✅ ' + data.message;
+                    altBands.style.display = 'none';
+                } else {
+                    result.className = 'avail-result unavailable';
+                    var html = '⚠️ ' + data.message;
+                    if (data.nearest_dates && data.nearest_dates.length > 0) {
+                        html += '<div class="nearest-dates">';
+                        html += '<span style="color:#94a3b8;font-size:0.78rem;width:100%;margin-bottom:2px">Nearest available dates:</span>';
+                        data.nearest_dates.forEach(function(d) {
+                            html += '<span class="nearest-date-chip" onclick="setDate(\'' + d + '\')">' + d + '</span>';
+                        });
+                        html += '</div>';
+                    }
+                    result.innerHTML = html;
+
+                    if (data.alternative_bands && data.alternative_bands.length > 0) {
+                        altBands.style.display = 'block';
+                        var bhtml = '<h6><i class="bi bi-stars me-1"></i>Similar bands available on ' + dateStr + ':</h6>';
+                        data.alternative_bands.forEach(function(b) {
+                            var photoHtml = b.photo
+                                ? '<img src="' + b.photo + '" class="alt-band-photo" alt="' + b.name + '">'
+                                : '<div class="alt-band-photo-placeholder">🎸</div>';
+                            var stars = '⭐ ' + b.rating.toFixed(1);
+                            bhtml += '<a href="/enquiries/submit/' + b.id + '/" class="alt-band-card">'
+                                + photoHtml
+                                + '<div class="alt-band-info">'
+                                + '<p class="alt-band-name">' + b.name + '</p>'
+                                + '<p class="alt-band-meta">' + (b.location || 'Unknown location') + ' • ' + stars + '</p>'
+                                + '</div>'
+                                + '<span class="alt-band-action">Book →</span>'
+                                + '</a>';
+                        });
+                        altBands.innerHTML = bhtml;
+                    }
+                }
+            })
+            .catch(function() {
+                loading.style.display = 'none';
+            });
+    }
+
+    function setDate(dateStr) {
+        var dateInput = document.getElementById('id_event_date');
+        if (dateInput) {
+            dateInput.value = dateStr;
+            checkAvailability(dateStr);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var dateInput = document.getElementById('id_event_date');
+        if (dateInput) {
+            dateInput.addEventListener('change', function() {
+                clearTimeout(checkTimeout);
+                checkTimeout = setTimeout(function() {
+                    checkAvailability(dateInput.value);
+                }, 300);
+            });
+        }
+    });
+</script>
+{% endblock %}

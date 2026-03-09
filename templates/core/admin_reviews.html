@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Admin | Content Moderation (Reviews){% endblock %}
+{% block content %}
+<div class="container-fluid py-4" style="max-width:1400px">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h3 style="color: var(--bs-body-color);font-weight:700">Content Moderation (Reviews)</h3>
+            <a href="{% url 'core:admin_dashboard' %}" class="btn btn-outline-primary fw-bold">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="card bg-white shadow-sm border-0 p-4">
+        <div class="table-responsive">
+            <table class="table  table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer</th>
+                        <th>Band</th>
+                        <th>Stars</th>
+                        <th>Review Text</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for review in reviews %}
+                    <tr>
+                        <td>#{{ review.id }}</td>
+                        <td>{{ review.customer.get_full_name|default:review.customer.email }}</td>
+                        <td>{{ review.band.band_name }}</td>
+                        <td style="color:#F59E0B">{{ review.stars }} ★</td>
+                        <td>{{ review.review|truncatechars:50 }}</td>
+                        <td>{{ review.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <form method="post" action="{% url 'core:admin_review_delete' review.pk %}"
+                                style="display:inline" onsubmit="return confirm('Delete this review permanently?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No reviews submitted yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

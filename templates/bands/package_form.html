@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}{% if object %}Edit Package{% else %}Add Package{% endif %}{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-white shadow-sm border-0 p-4">
+                <h4 style="color: var(--bs-body-color);font-weight:700" class="mb-4">{% if object %}Edit Package{% else %}Add New
+                    Package{% endif %}</h4>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary fw-bold flex-grow-1">Save Package</button>
+                        <a href="{% url 'bands:manage_packages' %}" class="btn btn-outline-primary fw-bold">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

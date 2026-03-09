@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Manage Bookings{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 style="color: var(--bs-body-color);">Manage Bookings</h3>
+        <a href="{% url 'bands:manager_dashboard' %}" class="btn btn-outline-primary fw-bold">Back to Dashboard</a>
+    </div>
+
+    {% if bookings %}
+    <div class="row g-4">
+        {% for booking in bookings %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card bg-white shadow-sm border-0 p-4 h-100 d-flex flex-column" style="border-radius:1rem">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h5 style="color: var(--bs-body-color);font-weight:700;margin:0">{{ booking.customer.get_full_name|default:booking.customer.email }}</h5>
+                        <p style="color:#94a3b8;font-size:0.78rem;margin:2px 0 0">{{ booking.customer.email }}</p>
+                    </div>
+                    {% if booking.status == 'confirmed' %}
+                    <span class="badge" style="background:#22c55e;border-radius:20px">Confirmed</span>
+                    {% elif booking.status == 'pending_payment' %}
+                      {% if booking.payment_type == 'full' %}
+                      <span class="badge" style="background:#f59e0b;border-radius:20px">Pending Full Payment</span>
+                      {% elif booking.payment_type == 'advance' %}
+                      <span class="badge" style="background:#f59e0b;border-radius:20px">Pending Advance Payment</span>
+                      {% endif %}
+                    {% elif booking.status == 'completed' %}
+                    <span class="badge" style="background:#8b5cf6;border-radius:20px">Completed</span>
+                    {% elif booking.status == 'cancelled' %}
+                    <span class="badge" style="background:#ef4444;border-radius:20px">Cancelled</span>
+                    {% endif %}
+                </div>
+
+                <div style="color: #94a3b8;font-size:0.88rem;margin-bottom:0.4rem">
+                    <i class="bi bi-calendar-event me-2"></i>{{ booking.event_date|date:"d M Y" }}
+                </div>
+                <div style="color: #94a3b8;font-size:0.88rem;margin-bottom:0.4rem">
+                    <i class="bi bi-music-note-beamed me-2"></i>{{ booking.event_type }}
+                </div>
+                <div style="color: #94a3b8;font-size:0.88rem;margin-bottom:1rem">
+                    <i class="bi bi-geo-alt me-2"></i>{{ booking.event_location }}
+                </div>
+
+                <div class="mt-auto pt-3 d-grid gap-2" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                    <div style="font-size: 0.85rem; padding-bottom: 0.5rem; text-align: center;">
+                        <strong>Agreed: ₹{{ booking.agreed_amount }}</strong>
+                        {% if booking.payment_type == 'advance' %}
+                            <br><small class="text-muted">Advance: ₹{{ booking.advance_amount }} ({{ booking.payment_status|title }})</small>
+                        {% elif booking.payment_type == 'offline' %}
+                            <br><small class="text-muted">Payment: Pay Later / Cash</small>
+                        {% else %}
+                            <br><small class="text-muted">Payment: {{ booking.payment_status|title }}</small>
+                        {% endif %}
+                    </div>
+
+                    {% if booking.status == 'confirmed' %}
+                    
+                    {% if booking.payment_type == 'advance' or booking.payment_type == 'offline' %}
+                    <form method="post" action="{% url 'bookings:mark_fully_paid' booking.pk %}" class="d-grid mb-1">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-success fw-bold" style="border-radius:10px" onclick="return confirm('Mark this booking as fully paid?')">
+                            <i class="bi bi-cash-coin me-1"></i>Mark Fully Paid
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <a href="{% url 'bookings:mark_completed' booking.pk %}" class="btn btn-primary fw-bold py-2" style="border-radius:10px;font-size:0.85rem" onclick="return confirm('Mark this event as completed?')">
+                        <i class="bi bi-check-circle me-1"></i>Mark as Completed
+                    </a>
+                    <a href="{% url 'bookings:cancel_booking' booking.pk %}" class="btn btn-outline-danger fw-bold py-2" style="border-radius:10px;font-size:0.85rem" onclick="return confirm('Cancel this booking?')">
+                        <i class="bi bi-x-circle me-1"></i>Cancel Booking
+                    </a>
+                    {% elif booking.status == 'pending_payment' %}
+                    <div style="color: #f59e0b;font-size:0.82rem;text-align:center">
+                        <i class="bi bi-hourglass-split me-1"></i>Awaiting customer payment
+                    </div>
+                    {% elif booking.status == 'completed' %}
+                    <div style="color:#8b5cf6;font-size:0.82rem;text-align:center">
+                        <i class="bi bi-check-all me-1"></i>Event completed
+                        {% if booking.rating %}
+                        <span style="color:#F59E0B"> • {{ booking.rating.stars }}★ rated</span>
+                        {% else %}
+                        <span style="color:#94a3b8"> • Awaiting rating</span>
+                        {% endif %}
+                    </div>
+                    {% elif booking.status == 'cancelled' %}
+                    <div style="color:#ef4444;font-size:0.82rem;text-align:center">
+                        <i class="bi bi-x-circle me-1"></i>Cancelled
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card bg-white shadow-sm border-0 p-5 text-center" style="border-radius:1rem">
+        <div style="font-size:3rem;opacity:0.5;margin-bottom:1rem">📅</div>
+        <h5 style="color: var(--bs-body-color);">No bookings yet</h5>
+        <p style="color: #94a3b8;">When customers book your band, their confirmed events will appear here.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

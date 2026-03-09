@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container-fluid py-4" style="max-width:1400px">
+    <div class="mb-4">
+        <h2 style="color: var(--bs-body-color);font-weight:700">Admin Dashboard</h2>
+        <p style="color: #94a3b8;">Overview of platform activity and metrics</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card bg-light p-4 text-center border-0 shadow-sm">
+                <div
+                    style="color: #94a3b8;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem">
+                    Total Users</div>
+                <div class="fs-2 fw-bold text-primary">{{ total_users }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light p-4 text-center border-0 shadow-sm">
+                <div
+                    style="color: #94a3b8;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem">
+                    Active Bands</div>
+                <div class="fs-2 fw-bold text-primary">{{ total_bands }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light p-4 text-center border-0 shadow-sm">
+                <div
+                    style="color: #94a3b8;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem">
+                    Bookings</div>
+                <div class="fs-2 fw-bold text-primary">{{ total_enquiries }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light p-4 text-center border-0 shadow-sm">
+                <div
+                    style="color: #94a3b8;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem">
+                    Reviews</div>
+                <div class="fs-2 fw-bold text-primary">{{ total_reviews }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card bg-white shadow-sm border-0 p-4 h-100">
+                <h5 style="color: var(--bs-body-color);font-weight:600;margin-bottom:1.5rem">Quick Links</h5>
+                <div class="d-grid gap-3">
+                    <a href="{% url 'core:admin_users' %}" class="btn btn-outline-primary text-start py-3"
+                        style="border-radius:12px">
+                        <i class="bi bi-people me-2" style="color: #0d6efd;"></i> Manage Users
+                    </a>
+                    <a href="{% url 'core:admin_bands' %}" class="btn btn-outline-primary text-start py-3"
+                        style="border-radius:12px">
+                        <i class="bi bi-mic me-2" style="color: #0d6efd;"></i> Manage Bands
+                    </a>
+                    <a href="{% url 'core:admin_enquiries' %}" class="btn btn-outline-primary text-start py-3"
+                        style="border-radius:12px">
+                        <i class="bi bi-inbox me-2" style="color: #0d6efd;"></i> View All Bookings
+                    </a>
+                    <a href="{% url 'core:admin_reviews' %}" class="btn btn-outline-primary text-start py-3"
+                        style="border-radius:12px">
+                        <i class="bi bi-star me-2" style="color: #0d6efd;"></i> Moderate Reviews
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-white shadow-sm border-0 p-4 h-100">
+                <h5 style="color: var(--bs-body-color);font-weight:600;margin-bottom:1.5rem">Recent System Activity</h5>
+                <div class="text-center py-5" style="border:1px dashed var(--brand-border);border-radius:12px">
+                    <i class="bi bi-activity text-muted" style="font-size:2rem"></i>
+                    <p class="mt-2 text-muted">Activity logs will appear here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

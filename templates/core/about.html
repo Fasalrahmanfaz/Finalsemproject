@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}About Us - Bandez{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 style="font-family:'Playfair Display',serif;font-weight:800;color: var(--bs-body-color);font-size:clamp(2rem,4vw,3rem)"
+                class="mb-4 text-center">About <span class="text-primary">Bandez</span></h1>
+
+            <div class="card bg-white shadow-sm border-0 p-5 mb-5">
+                <h4 style="color: var(--bs-body-color);font-weight:700" class="mb-3">Our Mission</h4>
+                <p style="color: #94a3b8;line-height:1.8;font-size:1.1rem">
+                    Bandez is an AI-powered platform designed to connect event organizers seamlessly with the best
+                    musical talent. We aim to take the stress out of event planning by offering transparent pricing,
+                    intelligent matching, and real-time availability checking.
+                </p>
+            </div>
+
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <div class="card bg-white shadow-sm border-0 p-4 h-100">
+                        <div style="font-size:2rem;color: #0d6efd;" class="mb-3"><i
+                                class="bi bi-music-note-list"></i></div>
+                        <h5 style="color: var(--bs-body-color);font-weight:600">For Organizers</h5>
+                        <p style="color: #94a3b8;font-size:0.95rem">Discover verified bands, check their
+                            packages, and book instantly without endless phone calls or negotiations.</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-white shadow-sm border-0 p-4 h-100">
+                        <div style="font-size:2rem;color: #0d6efd;" class="mb-3"><i class="bi bi-mic"></i>
+                        </div>
+                        <h5 style="color: var(--bs-body-color);font-weight:600">For Artists</h5>
+                        <p style="color: #94a3b8;font-size:0.95rem">Manage your calendar, showcase your
+                            performances through the gallery, and receive verified bookings from interested clients.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <p style="color: #94a3b8;">Join thousands of users finding their perfect rhythm on Bandez.</p>
+                <div class="d-flex justify-content-center gap-3 mt-3">
+                    <a href="{% url 'accounts:register_customer' %}" class="btn btn-primary fw-bold">Sign up to Book</a>
+                    <a href="{% url 'accounts:register_band_manager' %}" class="btn btn-outline-primary fw-bold">Register your
+                        Band</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

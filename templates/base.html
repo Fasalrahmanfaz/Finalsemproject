@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Band Manager</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Chart.js (For Admin Dashboard) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts for Typography -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap"
+        rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bs-body-bg: #0b0f19;
+            --bs-body-color: #f1f5f9;
+            --bs-primary: #8b5cf6;
+            --bs-primary-rgb: 139, 92, 246;
+            --bs-dark: #1e293b;
+            --bs-card-bg: rgba(30, 41, 59, 0.6);
+            --bs-border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background: linear-gradient(135deg, #0b0f19 0%, #171033 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--bs-body-color);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background: rgba(11, 15, 25, 0.8) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-weight: 800;
+            letter-spacing: 1px;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #c4b5fd, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: #cbd5e1 !important;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: #ffffff !important;
+            text-shadow: 0 0 10px rgba(196, 181, 253, 0.5);
+        }
+
+        /* Utility class overrides for the light theme swap */
+        .bg-white {
+            background-color: var(--bs-card-bg) !important;
+        }
+
+        .bg-light {
+            background-color: rgba(255, 255, 255, 0.03) !important;
+        }
+
+        .text-dark {
+            color: #f1f5f9 !important;
+        }
+
+        .bg-dark {
+            background-color: #0b0f19 !important;
+        }
+
+        .shadow-sm {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+        }
+
+        .card {
+            background-color: var(--bs-card-bg) !important;
+            border: 1px solid var(--bs-border-color) !important;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5) !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.7) !important;
+            border-color: rgba(139, 92, 246, 0.4) !important;
+        }
+
+        .btn {
+            border-radius: 0.5rem;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border: none;
+            box-shadow: 0 4px 15px -3px rgba(139, 92, 246, 0.5);
+            color: white !important;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -3px rgba(139, 92, 246, 0.7);
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+        }
+
+        .btn-outline-primary {
+            color: #c4b5fd !important;
+            border-color: #8b5cf6 !important;
+            background: transparent;
+        }
+
+        .btn-outline-primary:hover {
+            background: rgba(139, 92, 246, 0.1) !important;
+            box-shadow: 0 4px 15px -3px rgba(139, 92, 246, 0.3);
+        }
+
+        .text-primary {
+            background: linear-gradient(135deg, #c4b5fd, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Form Overrides */
+        .form-control,
+        .form-select {
+            background-color: rgba(11, 15, 25, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: rgba(30, 41, 59, 0.8);
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
+            color: #ffffff;
+        }
+
+        /* Force color application on hardcoded inline styles */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: #f8fafc !important;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        p,
+        label,
+        span:not(.badge),
+        .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        .table {
+            color: #cbd5e1;
+        }
+
+        .table-bordered> :not(caption)>* {
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(11, 15, 25, 0.9) !important;
+        }
+
+        /* Add some subtle animated blobs to the background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 50vw;
+            height: 50vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: -1;
+            filter: blur(60px);
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -20%;
+            right: -10%;
+            width: 60vw;
+            height: 60vw;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: -1;
+            filter: blur(80px);
+        }
+
+        .container {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'core:home' %}">🎸 BANDEZ</a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+
+                    <!-- Common Links (Visible to Everyone) -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'bands:explore' %}">Find Bands</a>
+                    </li>
+                    {% if user.is_authenticated and user.role == 'customer' or not user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0)" onclick="toggleChatbot()">🤖 AI Chatbot</a>
+                    </li>
+                    {% endif %}
+
+                    <!-- Logic for Logged-In Users -->
+                    {% if user.is_authenticated %}
+
+                    <!-- 1. ADMIN LINK -->
+                    {% if user.is_superuser %}
+                    <li class="nav-item">
+                        <a class="nav-link text-danger fw-bold" href="{% url 'core:admin_dashboard' %}">
+                            📊 Admin Analytics
+                        </a>
+                    </li>
+
+                    <!-- 2. BAND MANAGER LINK -->
+                    {% elif user.role == 'band_manager' %}
+                    <li class="nav-item">
+                        <a class="nav-link text-warning fw-bold" href="{% url 'bands:manager_dashboard' %}">
+                            🎸 Band Dashboard
+                        </a>
+                    </li>
+
+                    <!-- 3. NORMAL USER LINK -->
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="{% url 'enquiries:my_enquiries' %}">
+                            📋 My Requests
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-info fw-bold" href="{% url 'bookings:my_bookings' %}">
+                            📅 My Bookings
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <!-- Logout Button -->
+                    <li class="nav-item ms-2">
+                        <form action="{% url 'accounts:logout' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-primary btn-sm" type="submit">Logout</button>
+                        </form>
+                    </li>
+
+                    <!-- Logic for Guests -->
+                    {% else %}
+                    <li class="nav-item ms-2">
+                        <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'accounts:login' %}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary btn-sm" href="{% url 'accounts:register_customer' %}">Sign Up</a>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="container" style="min-height: 80vh;">
+
+        <!-- Display Messages (Success/Error Alerts) -->
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Page Specific Content -->
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-dark text-center py-3 mt-5">
+        <small>&copy; 2026 AI-Enabled Musical Band Booking System</small>
+    </footer>
+
+    <!-- Chatbot Widget -->
+    {% if user.is_authenticated and user.role == 'customer' or not user.is_authenticated %}
+    {% include 'chatbot/widget.html' %}
+    {% endif %}
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Accept Enquiry{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4 shadow">
+            <h3 class="mb-4">Accept Enquiry: {{ enquiry.reference_number }}</h3>
+            <p><strong>Customer:</strong> {{ enquiry.customer.get_full_name }}</p>
+            <p><strong>Event:</strong> {{ enquiry.get_event_type_display }}</p>
+            <p><strong>Date:</strong> {{ enquiry.event_date }}</p>
+            <p><strong>Package selected:</strong> {% if enquiry.package %}{{ enquiry.package.name }} ({{ enquiry.package.min_price }} - {{ enquiry.package.max_price }}){% else %}None{% endif %}</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="agreed_amount" class="form-label text-white">Full Agreed Amount (₹)</label>
+                    <input type="number" name="agreed_amount" id="agreed_amount" class="form-control" required min="1">
+                    <small class="text-muted">The total price for this event.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-white">Payment Type</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment_type" id="pay_full" value="full" checked onclick="toggleAdvance(false)">
+                        <label class="form-check-label text-white" for="pay_full">
+                            Require Full Payment via Stripe
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment_type" id="pay_advance" value="advance" onclick="toggleAdvance(true)">
+                        <label class="form-check-label text-white" for="pay_advance">
+                            Require Advance Payment via Stripe
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment_type" id="pay_offline" value="offline" onclick="toggleAdvance(false)">
+                        <label class="form-check-label text-white" for="pay_offline">
+                            Offline (Pay Later / Cash) - Confirm immediately
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-4" id="advance_div" style="display: none;">
+                    <label for="advance_amount" class="form-label text-white">Advance Amount (₹)</label>
+                    <input type="number" name="advance_amount" id="advance_amount" class="form-control" min="1">
+                    <small class="text-muted">The exact amount the customer must pay now to confirm this booking.</small>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'enquiries:manager_enquiry_list' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-success">Accept Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAdvance(show) {
+    const div = document.getElementById('advance_div');
+    const input = document.getElementById('advance_amount');
+    if (show) {
+        div.style.display = 'block';
+        input.required = true;
+    } else {
+        div.style.display = 'none';
+        input.required = false;
+        input.value = '';
+    }
+}
+</script>
+{% endblock %}

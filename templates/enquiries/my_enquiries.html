@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h3 style="color: var(--bs-body-color);" class="mb-4">My Booking Requests</h3>
+    {% if enquiries %}
+    <div class="row g-4">
+        {% for enq in enquiries %}
+        <div class="col-md-6 col-lg-4">
+            <a href="{% url 'enquiries:enquiry_detail' enq.pk %}" class="text-decoration-none">
+                <div class="card bg-white shadow-sm border-0 p-4 h-100" style="border-radius:1rem;transition:all 0.2s;cursor:pointer" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 style="color:var(--bs-body-color);font-weight:700;margin:0">{{ enq.band.band_name }}</h5>
+                        {% if enq.status == 'pending' %}
+                        <span class="badge" style="background:#f59e0b;color:#000;border-radius:20px">Pending</span>
+                        {% elif enq.status == 'accepted' %}
+                        <span class="badge" style="background:#22c55e;border-radius:20px">Accepted</span>
+                        {% elif enq.status == 'rejected' %}
+                        <span class="badge" style="background:#ef4444;border-radius:20px">Rejected</span>
+                        {% elif enq.status == 'cancelled' %}
+                        <span class="badge" style="background:#6b7280;border-radius:20px">Cancelled</span>
+                        {% elif enq.status == 'completed' %}
+                        <span class="badge" style="background:#8b5cf6;border-radius:20px">Completed</span>
+                        {% else %}
+                        <span class="badge bg-primary" style="border-radius:20px">{{ enq.get_status_display }}</span>
+                        {% endif %}
+                    </div>
+                    <div style="color:#94a3b8;font-size:0.88rem;margin-bottom:0.4rem">
+                        <i class="bi bi-calendar-event me-2"></i>{{ enq.event_date|date:"d M Y" }}
+                    </div>
+                    <div style="color:#94a3b8;font-size:0.88rem;margin-bottom:0.4rem">
+                        <i class="bi bi-music-note-beamed me-2"></i>{{ enq.get_event_type_display }}
+                    </div>
+                    <div style="color:#94a3b8;font-size:0.88rem;margin-bottom:0.4rem">
+                        <i class="bi bi-geo-alt me-2"></i>{{ enq.event_location }}
+                    </div>
+                    <div style="color:#64748b;font-size:0.75rem;margin-top:auto;padding-top:0.75rem;border-top:1px solid rgba(255,255,255,0.06)">
+                        Ref: {{ enq.reference_number }} • {{ enq.created_at|date:"M d, Y" }}
+                        {% if enq.messages.count > 0 %}
+                        <span style="float:right;color:#8b5cf6"><i class="bi bi-chat-dots me-1"></i>{{ enq.messages.count }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card bg-white shadow-sm border-0 p-5 text-center" style="border-radius:1rem">
+        <div style="font-size:3rem;opacity:0.5;margin-bottom:1rem">📋</div>
+        <h5 style="color: var(--bs-body-color);">No booking requests yet</h5>
+        <p style="color: #94a3b8;">Explore bands and send booking requests to get started.</p>
+        <a href="{% url 'bands:explore' %}" class="btn btn-primary fw-bold mt-2">Explore Bands</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

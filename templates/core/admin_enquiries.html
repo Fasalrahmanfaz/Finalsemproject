@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Admin | All Bookings{% endblock %}
+{% block content %}
+<div class="container-fluid py-4" style="max-width:1400px">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h3 style="color: var(--bs-body-color);font-weight:700">All Bookings</h3>
+            <a href="{% url 'core:admin_dashboard' %}" class="btn btn-outline-primary fw-bold">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="card bg-white shadow-sm border-0 p-4">
+        <div class="table-responsive">
+            <table class="table  table-hover table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer</th>
+                        <th>Band</th>
+                        <th>Date</th>
+                        <th>Event Type</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enq in enquiries %}
+                    <tr>
+                        <td>#{{ enq.id }}</td>
+                        <td>{{ enq.customer.get_full_name|default:enq.customer.email }}</td>
+                        <td>{{ enq.band.band_name }}</td>
+                        <td>{{ enq.event_date|date:"M d, Y" }}</td>
+                        <td>{{ enq.get_event_type_display }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ enq.get_status_display }}</span>
+                        </td>
+                        <td>{{ enq.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No bookings registered yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

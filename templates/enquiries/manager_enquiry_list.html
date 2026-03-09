@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Received Bookings{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h3 style="color: var(--bs-body-color);" class="mb-4">Received Bookings</h3>
+    {% if enquiries %}
+    <div class="table-responsive">
+        <table class="table  table-hover table-bordered">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Event Date</th>
+                    <th>Event Type</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for enq in enquiries %}
+                <tr>
+                    <td>{{ enq.customer.get_full_name|default:enq.customer.email }}</td>
+                    <td>{{ enq.event_date|date:"M d, Y" }}</td>
+                    <td>{{ enq.get_event_type_display }}</td>
+                    <td>{{ enq.event_location }}</td>
+                    <td>
+                        <span class="badge bg-primary">
+                            {{ enq.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'enquiries:enquiry_detail' enq.pk %}"
+                            class="btn btn-sm btn-outline-primary">View</a>
+                        {% if enq.status == 'pending' %}
+                        <a href="{% url 'enquiries:accept_enquiry' enq.pk %}" class="btn btn-sm btn-success">Accept</a>
+                        <a href="{% url 'enquiries:reject_enquiry' enq.pk %}" class="btn btn-sm btn-danger">Reject</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="card bg-white shadow-sm border-0 p-5 text-center">
+        <p style="color: #94a3b8;">No bookings received yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

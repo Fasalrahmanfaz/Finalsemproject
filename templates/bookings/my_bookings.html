@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <h3 style="color: var(--bs-body-color);" class="mb-4">My Bookings</h3>
+    {% if bookings %}
+    <div class="row g-4">
+        {% for booking in bookings %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card bg-white shadow-sm border-0 p-4 h-100 d-flex flex-column" style="border-radius:1rem">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 style="color: var(--bs-body-color);font-weight:700;margin:0">
+                        <a href="{% url 'bands:profile_detail' booking.band.pk %}"
+                            style="color: var(--bs-body-color);text-decoration:none">{{ booking.band.band_name }}</a>
+                    </h5>
+                    {% if booking.status == 'confirmed' %}
+                    <span class="badge" style="background:#22c55e;border-radius:20px">Confirmed</span>
+                    {% elif booking.status == 'pending_payment' %}
+                      {% if booking.payment_type == 'full' %}
+                      <span class="badge" style="background:#f59e0b;border-radius:20px">Pending Full Payment</span>
+                      {% elif booking.payment_type == 'advance' %}
+                      <span class="badge" style="background:#f59e0b;border-radius:20px">Pending Advance Payment</span>
+                      {% endif %}
+                    {% elif booking.status == 'completed' %}
+                    <span class="badge" style="background:#8b5cf6;border-radius:20px">Completed</span>
+                    {% elif booking.status == 'cancelled' %}
+                    <span class="badge" style="background:#ef4444;border-radius:20px">Cancelled</span>
+                    {% endif %}
+                </div>
+
+                <div style="color: #94a3b8;font-size:0.9rem;margin-bottom:0.5rem">
+                    <i class="bi bi-calendar-event me-2"></i>{{ booking.event_date|date:"d M Y" }}
+                </div>
+                <div style="color: #94a3b8;font-size:0.9rem;margin-bottom:0.5rem">
+                    <i class="bi bi-music-note-beamed me-2"></i>{{ booking.event_type }}
+                </div>
+                <div style="color: #94a3b8;font-size:0.9rem;margin-bottom:1rem">
+                    <i class="bi bi-geo-alt me-2"></i>{{ booking.event_location }}
+                </div>
+
+                <div class="mt-auto pt-3" style="border-top: 1px solid rgba(255,255,255,0.06);">
+                    <div style="font-size: 0.85rem; padding-bottom: 0.5rem; text-align: center;">
+                        <strong>Agreed: ₹{{ booking.agreed_amount }}</strong>
+                        {% if booking.payment_type == 'advance' %}
+                            <br><small class="text-muted">Advance: ₹{{ booking.advance_amount }} ({{ booking.payment_status|title }})</small>
+                        {% elif booking.payment_type == 'offline' %}
+                            <br><small class="text-muted">Payment: Pay Later / Cash</small>
+                        {% else %}
+                            <br><small class="text-muted">Payment: {{ booking.payment_status|title }}</small>
+                        {% endif %}
+                    </div>
+
+                    {% if booking.status == 'completed' %}
+                        {% if booking.rating %}
+                        <div style="text-align:center">
+                            <span style="color:#F59E0B;font-size:1.1rem">{% if booking.rating.stars >= 1 %}★{% else %}☆{% endif %}{% if booking.rating.stars >= 2 %}★{% else %}☆{% endif %}{% if booking.rating.stars >= 3 %}★{% else %}☆{% endif %}{% if booking.rating.stars >= 4 %}★{% else %}☆{% endif %}{% if booking.rating.stars >= 5 %}★{% else %}☆{% endif %}</span>
+                            <p style="color:#94a3b8;font-size:0.78rem;margin:4px 0 0">You rated this band</p>
+                        </div>
+                        {% else %}
+                        <a href="{% url 'reviews:submit_rating' booking.pk %}" class="btn btn-primary fw-bold w-100 text-center py-2" style="font-size:0.9rem;border-radius:10px">
+                            <i class="bi bi-star me-1"></i>Rate This Band
+                        </a>
+                        {% endif %}
+                    {% elif booking.status == 'confirmed' %}
+                    <div style="color: #94a3b8;font-size:0.8rem;text-align:center">
+                        <i class="bi bi-hourglass-split me-1"></i>Awaiting event completion
+                    </div>
+                    {% elif booking.status == 'pending_payment' %}
+                    <a href="{% url 'bookings:create_checkout_session' booking.pk %}" class="btn btn-warning fw-bold w-100 text-center py-2" style="font-size:0.9rem;border-radius:10px; color:#1e293b;">
+                        <i class="bi bi-credit-card me-1"></i>
+                        {% if booking.payment_type == 'advance' %}
+                            Pay Advance ₹{{ booking.advance_amount }}
+                        {% else %}
+                            Pay Full ₹{{ booking.agreed_amount }}
+                        {% endif %}
+                    </a>
+                    {% elif booking.status == 'cancelled' %}
+                    <div style="color: #ef4444;font-size:0.8rem;text-align:center">
+                        This booking was cancelled
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card bg-white shadow-sm border-0 p-5 text-center" style="border-radius:1rem">
+        <div style="font-size:3rem;opacity:0.5;margin-bottom:1rem">🎸</div>
+        <h5 style="color: var(--bs-body-color);">No bookings yet</h5>
+        <p style="color: #94a3b8;">Explore bands and send booking requests to book them for your events.</p>
+        <a href="{% url 'bands:explore' %}" class="btn btn-primary fw-bold mt-3">Explore Bands</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

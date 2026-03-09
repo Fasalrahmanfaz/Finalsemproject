@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% block title %}Customer Dashboard{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 style="color: var(--bs-body-color);font-weight:700">Dashboard</h2>
+            <p style="color: #94a3b8;">Welcome back, {{ request.user.get_full_name|default:request.user.email
+                }}</p>
+        </div>
+        <a href="{% url 'bands:explore' %}" class="btn btn-primary fw-bold">Explore Bands</a>
+    </div>
+
+    <!-- Stats row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card bg-light p-4 text-center border-0 shadow-sm">
+                <div
+                    style="color: #94a3b8;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem">
+                    My Bookings</div>
+                <div class="fs-2 fw-bold text-primary">{{ request.user.enquiries_sent.count|default:0 }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light p-4 text-center border-0 shadow-sm">
+                <div
+                    style="color: #94a3b8;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem">
+                    Confirmed Bookings</div>
+                <div class="fs-2 fw-bold text-primary">{{ user_bookings_count|default:0 }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-light p-4 text-center border-0 shadow-sm">
+                <div
+                    style="color: #94a3b8;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.5rem">
+                    Reviews Given</div>
+                <div class="fs-2 fw-bold text-primary">{{ request.user.reviews_given.count|default:0 }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Quick Links -->
+        <div class="col-md-4">
+            <div class="card bg-white shadow-sm border-0 p-4 h-100">
+                <h5 style="color: var(--bs-body-color);font-weight:600;margin-bottom:1.5rem">Quick Links</h5>
+                <div class="d-grid gap-3">
+                    <a href="{% url 'enquiries:my_enquiries' %}" class="btn btn-outline-primary text-start py-3"
+                        style="border-radius:12px">
+                        <i class="bi bi-inbox me-2" style="color: #0d6efd;"></i> View My Bookings
+                    </a>
+                    <a href="{% url 'bookings:my_bookings' %}" class="btn btn-outline-primary text-start py-3"
+                        style="border-radius:12px">
+                        <i class="bi bi-calendar-check me-2" style="color: #0d6efd;"></i> View My Bookings
+                    </a>
+                    <a href="{% url 'accounts:delete_account' %}" class="btn btn-outline-danger text-start py-3"
+                        style="border-radius:12px">
+                        <i class="bi bi-trash me-2"></i> Delete Account
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-md-8">
+            <div class="card bg-white shadow-sm border-0 p-4 h-100">
+                <h5 style="color: var(--bs-body-color);font-weight:600;margin-bottom:1.5rem">Activity Feed</h5>
+                {% if user_activities %}
+                <div class="list-group list-group-flush"
+                    style="background:transparent;border-radius:12px;overflow:hidden;border: 1px solid #dee2e6;">
+                    {% for activity in user_activities %}
+                    <div class="list-group-item"
+                        style="background: transparent;color: var(--bs-body-color);border-color: rgba(255,255,255,0.1);padding:1rem">
+                        {% if activity.type == 'enquiry' %}
+                        <div class="d-flex align-items-center">
+                            <div
+                                style="width:40px;height:40px;border-radius:50%;background:rgba(168,85,247,0.1);color: #0d6efd;display:flex;align-items:center;justify-content:center;margin-right:1rem">
+                                <i class="bi bi-send"></i>
+                            </div>
+                            <div>
+                                <div style="color: var(--bs-body-color);font-weight:600;font-size:0.9rem">You sent a booking request to {{
+                                    activity.related_name }}</div>
+                                <div style="color: #94a3b8;font-size:0.8rem">{{ activity.date|date:"F d, Y,
+                                    h:i A" }}</div>
+                            </div>
+                        </div>
+                        {% elif activity.type == 'booking' %}
+                        <div class="d-flex align-items-center">
+                            <div
+                                style="width:40px;height:40px;border-radius:50%;background:rgba(16,185,129,0.1);color:#10B981;display:flex;align-items:center;justify-content:center;margin-right:1rem">
+                                <i class="bi bi-calendar-check"></i>
+                            </div>
+                            <div>
+                                <div style="color: var(--bs-body-color);font-weight:600;font-size:0.9rem">Your booking with {{
+                                    activity.related_name }} is confirmed</div>
+                                <div style="color: #94a3b8;font-size:0.8rem">{{ activity.date|date:"F d, Y,
+                                    h:i A" }}</div>
+                            </div>
+                        </div>
+                        {% elif activity.type == 'review' %}
+                        <div class="d-flex align-items-center">
+                            <div
+                                style="width:40px;height:40px;border-radius:50%;background:rgba(245,158,11,0.1);color:#F59E0B;display:flex;align-items:center;justify-content:center;margin-right:1rem">
+                                <i class="bi bi-star"></i>
+                            </div>
+                            <div>
+                                <div style="color: var(--bs-body-color);font-weight:600;font-size:0.9rem">You left a review for {{
+                                    activity.related_name }}</div>
+                                <div style="color: #94a3b8;font-size:0.8rem">{{ activity.date|date:"F d, Y,
+                                    h:i A" }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5" style="border:1px dashed var(--brand-border);border-radius:12px">
+                    <i class="bi bi-activity text-muted" style="font-size:2rem"></i>
+                    <p class="mt-2 text-muted">No recent activity</p>
+                    <a href="{% url 'bands:explore' %}" class="btn btn-sm btn-outline-primary mt-2">Find a Band</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

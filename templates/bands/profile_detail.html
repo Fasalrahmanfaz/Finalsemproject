@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ band.band_name }} - Bandez{% endblock %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
+<!-- HEADER SECTION with gradient background -->
+<section style="background: transparent, var(--brand-card)); border-bottom: 1px solid #dee2e6; padding:4rem 0 2rem">
+    <div class="container">
+        <div class="row align-items-end">
+            <div class="col-md-4 mb-4 mb-md-0 position-relative">
+                {% if band.get_thumbnail %}
+                <img src="{{ band.get_thumbnail.url }}" alt="{{ band.band_name }} Profile"
+                    style="width:100%; height:300px; object-fit:cover; border-radius:16px; border:4px solid var(--brand-card); box-shadow:0 20px 40px rgba(0,0,0,0.5)">
+                {% else %}
+                <div
+                    style="width:100%; height:300px; background: transparent, rgba(168,85,247,0.2)); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:4rem; border:4px solid var(--brand-card)">
+                    🎵
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-8">
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    {% for et in band.get_event_types_display_list %}
+                    <span
+                        style="background:rgba(245,158,11,0.15);color:#F59E0B;border:1px solid rgba(245,158,11,0.3);border-radius:50px;padding:3px 10px;font-size:0.75rem">
+                        {{ et }}
+                    </span>
+                    {% endfor %}
+                </div>
+                <h1
+                    style="font-family:'Playfair Display',serif;font-weight:800;color: var(--bs-body-color);font-size:clamp(1.8rem,4vw,3rem)">
+                    {{ band.band_name }}
+                </h1>
+                <div class="d-flex flex-wrap gap-3 align-items-center mb-3" style="color: #94a3b8;">
+                    <span>
+                        <i class="bi bi-geo-alt"></i> {{ band.base_location }}
+                        {% if band.state %}, {{ band.state }}{% endif %}
+                    </span>
+                    <span class="stars-display"><strong>★ {{ band.average_rating }}</strong></span>
+                    <span style="color: #94a3b8;font-size:0.9rem">
+                        {{ band.total_reviews }} review{{ band.total_reviews|pluralize }}
+                    </span>
+                    <span><i class="bi bi-calendar-check"></i> {{ band.events_attended }} Events Performed</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for g in band.get_genres_display_list %}
+                    <span class="badge bg-secondary">{{ g }}</span>
+                    {% endfor %}
+                </div>
+                <!-- buttons -->
+                <div class="d-flex gap-3 flex-wrap">
+                    {% if user.is_authenticated and user.role == 'customer' %}
+                    <a href="{% url 'enquiries:submit_enquiry' band.pk %}" class="btn btn-primary fw-bold"
+                        style="font-size:1rem;padding:0.75rem 2rem">
+                        <i class="bi bi-send me-2"></i>Send Booking Request
+                    </a>
+                    {% elif not user.is_authenticated %}
+                    <a href="{% url 'accounts:login' %}" class="btn btn-primary fw-bold">Login to Book</a>
+                    {% endif %}
+                    {% if band.instagram_url %}
+                    <a href="{{ band.instagram_url }}" target="_blank" class="btn btn-outline-primary fw-bold"
+                        style="padding:0.75rem 1.5rem">
+                        <i class="bi bi-instagram me-2"></i>Instagram
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container py-5">
+    <div class="row g-4">
+        <!-- LEFT MAIN CONTENT -->
+        <div class="col-lg-8">
+            <!-- ABOUT -->
+            <div class="card bg-white shadow-sm border-0 p-4 mb-4">
+                <h5 style="color: var(--bs-body-color);font-weight:700;margin-bottom:1rem">
+                    <i class="bi bi-info-circle me-2 text-primary"></i>About the Band
+                </h5>
+                <p style="color: #94a3b8;line-height:1.8">{{ band.description }}</p>
+                {% if user.is_authenticated %}
+                <hr class="divider my-3">
+                <h6 style="color: var(--bs-body-color);font-weight:600;font-size:0.9rem">Contact Details</h6>
+                <div class="d-flex flex-wrap gap-3">
+                    <span style="color: #94a3b8;font-size:0.875rem">
+                        <i class="bi bi-telephone me-1"></i>{{ band.phone }}
+                    </span>
+                    <span style="color: #94a3b8;font-size:0.875rem">
+                        <i class="bi bi-envelope me-1"></i>{{ band.email }}
+                    </span>
+                    {% if band.whatsapp %}
+                    <span style="color: #94a3b8;font-size:0.875rem">
+                        <i class="bi bi-whatsapp me-1"></i>{{ band.whatsapp }}
+                    </span>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p style="color: #94a3b8;font-size:0.85rem">
+                    <i class="bi bi-lock me-1"></i><a href="{% url 'accounts:login' %}">Login</a> to see contact details
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- SERVICE PACKAGES -->
+            {% if packages %}
+            <div class="card bg-white shadow-sm border-0 p-4 mb-4">
+                <h5 style="color: var(--bs-body-color);font-weight:700;margin-bottom:1rem">
+                    <i class="bi bi-box-seam me-2 text-primary"></i>Service Packages
+                </h5>
+                <div class="row g-3">
+                    {% for pkg in packages %}
+                    <div class="col-md-6">
+                        <div style="border: 1px solid #dee2e6;border-radius:12px;padding:1.25rem;height:100%">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 style="color: var(--bs-body-color);font-weight:600;margin:0">{{ pkg.name }}</h6>
+                            </div>
+                            <div style="color: #94a3b8;font-size:0.85rem;margin-bottom:0.75rem">
+                                {{ pkg.description }}
+                            </div>
+                            <div style="color: #198754;font-weight:700;font-size:1.1rem">
+                                ₹{{ pkg.min_price|floatformat:0 }} – ₹{{ pkg.max_price|floatformat:0 }}
+                            </div>
+                            <div style="color: #94a3b8;font-size:0.8rem">
+                                <i class="bi bi-clock me-1"></i>{{ pkg.duration_hours }} hours
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- AVAILABILITY CALENDAR -->
+            <div class="card bg-white shadow-sm border-0 p-4 mb-4">
+                <h5 style="color: var(--bs-body-color);font-weight:700;margin-bottom:0.5rem">
+                    <i class="bi bi-calendar3 me-2 text-primary"></i>Availability Calendar
+                </h5>
+                <div class="d-flex gap-3 mb-3 flex-wrap" style="font-size:0.78rem">
+                    <span><span
+                            style="display:inline-block;width:12px;height:12px;background:#28a745;border-radius:50%;margin-right:4px"></span>Available</span>
+                    <span><span
+                            style="display:inline-block;width:12px;height:12px;background:#dc3545;border-radius:50%;margin-right:4px"></span>Booked</span>
+                    <span><span
+                            style="display:inline-block;width:12px;height:12px;background:#6c757d;border-radius:50%;margin-right:4px"></span>Blocked</span>
+                </div>
+                <div id="availability-calendar"></div>
+            </div>
+
+            <!-- GALLERY -->
+            {% if gallery %}
+            <div class="card bg-white shadow-sm border-0 p-4 mb-4">
+                <h5 style="color: var(--bs-body-color);font-weight:700;margin-bottom:1rem">
+                    <i class="bi bi-images me-2 text-primary"></i>Performance Gallery
+                </h5>
+                <div class="row g-2" id="gallery-grid">
+                    {% for img in gallery %}
+                    <div class="col-6 col-md-4">
+                        <img src="{{ img.image.url }}" alt="{{ img.caption|default:band.band_name }}"
+                            style="width:100%;height:160px;object-fit:cover;border-radius:12px;cursor:pointer;transition:transform 0.2s"
+                            onmouseover="this.style.transform='scale(1.03)'"
+                            onmouseout="this.style.transform='scale(1)'"
+                            onclick="openLightbox('{{ img.image.url }}', '{{ img.caption|default:band.band_name }}', {{ forloop.counter0 }})"
+                            data-index="{{ forloop.counter0 }}">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- REVIEWS -->
+            <div class="card bg-white shadow-sm border-0 p-4">
+                <h5 style="color: var(--bs-body-color);font-weight:700;margin-bottom:1rem">
+                    <i class="bi bi-star-fill me-2 text-primary"></i>Customer Reviews
+                </h5>
+
+                <div class="row align-items-center mb-4 pb-3" style="border-bottom: 1px solid #dee2e6;">
+                    <div class="col-sm-4 text-center mb-3 mb-sm-0">
+                        <div style="font-size:3rem;font-weight:800;color:var(--bs-body-color);line-height:1">
+                            {{ band.average_rating }}
+                        </div>
+                        <div class="stars-display mt-1 mb-1" style="font-size:1.2rem;color:#F59E0B">
+                            {% with avg=band.average_rating|default:0|floatformat:0|add:0 %}
+                            {% if avg >= 1 %}★{% else %}☆{% endif %}
+                            {% if avg >= 2 %}★{% else %}☆{% endif %}
+                            {% if avg >= 3 %}★{% else %}☆{% endif %}
+                            {% if avg >= 4 %}★{% else %}☆{% endif %}
+                            {% if avg >= 5 %}★{% else %}☆{% endif %}
+                            {% endwith %}
+                        </div>
+                        <div style="color:#94a3b8;font-size:0.875rem">
+                            Based on {{ total_reviews }} review{{ total_reviews|pluralize }}
+                        </div>
+                    </div>
+                    <div class="col-sm-8">
+                        <div>
+                            {% for data in star_distribution %}
+                            <div class="d-flex align-items-center mb-2">
+                                <span style="color: #94a3b8;font-size:0.8rem;width:35px">{{ data.stars }}★</span>
+                                <div class="progress flex-grow-1 mx-2" style="height:6px;background:var(--brand-card2)">
+                                    <div class="progress-bar" role="progressbar"
+                                        style="width:{{ data.pct }}%;background:var(--brand-accent)"
+                                        aria-valuenow="{{ data.pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <span style="color: #94a3b8;font-size:0.8rem;width:35px">{{ data.pct }}%</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    {% for review in reviews %}
+                    <div style="border-top:1px solid #dee2e6;padding-top:1rem;margin-top:1rem">
+                        <div class="d-flex justify-content-between mb-1">
+                            <div>
+                                <span style="color:var(--bs-body-color);font-weight:600;font-size:0.9rem">
+                                    {{ review.customer.get_full_name }}
+                                </span>
+                                <span style="color:#94a3b8;font-size:0.8rem;margin-left:0.5rem">
+                                    • {{ review.event_type|title }}
+                                </span>
+                            </div>
+                            <div>
+                                <span style="color:#F59E0B">
+                                    {% if review.stars >= 1 %}★{% endif %}
+                                    {% if review.stars >= 2 %}★{% endif %}
+                                    {% if review.stars >= 3 %}★{% endif %}
+                                    {% if review.stars >= 4 %}★{% endif %}
+                                    {% if review.stars >= 5 %}★{% endif %}
+                                </span>
+                                <span style="color:#94a3b8;font-size:0.75rem;margin-left:0.5rem">
+                                    {{ review.created_at|date:"M Y" }}
+                                </span>
+                            </div>
+                        </div>
+                        {% if review.review %}
+                        <p style="color:#94a3b8;font-size:0.875rem;margin:0">
+                            {{ review.review }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4" style="color:#94a3b8;">
+                        <i class="bi bi-chat-square-text" style="font-size:2rem;display:block;margin-bottom:0.5rem"></i>
+                        No reviews yet. Be the first!
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if user.is_authenticated and user.role == 'customer' %}
+                <div class="mt-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.06)">
+                    <a href="{% url 'reviews:rate_band' band.pk %}" class="btn btn-primary fw-bold w-100 py-2" style="border-radius:10px">
+                        <i class="bi bi-pencil-square me-1"></i>Write a Review
+                    </a>
+                </div>
+                {% elif not user.is_authenticated %}
+                <div class="mt-3 pt-3" style="border-top:1px solid rgba(255,255,255,0.06)">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary fw-bold w-100 py-2" style="border-radius:10px">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Login to Write a Review
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- RIGHT SIDEBAR -->
+            <div class="col-lg-4">
+                <!-- Quick Enquiry CTA -->
+                {% if user.is_authenticated and user.role == 'customer' %}
+                <div class="card bg-white shadow-sm border-0 p-4 mb-4 text-center"
+                    style="border-color:rgba(108,60,225,0.5)">
+                    <div style="font-size:2rem;margin-bottom:0.5rem">✨</div>
+                    <h6 style="color: var(--bs-body-color);font-weight:700">Ready to Book?</h6>
+                    <p style="color: #94a3b8;font-size:0.85rem">Check availability and send a booking request
+                    </p>
+                    <a href="{% url 'enquiries:submit_enquiry' band.pk %}"
+                        class="btn btn-primary fw-bold w-100 text-center py-2">
+                        Send Booking Request
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Contact Card -->
+                {% if user.is_authenticated %}
+                <div class="card bg-white shadow-sm border-0 p-4 mb-4">
+                    <h6 style="color: var(--bs-body-color);font-weight:700;margin-bottom:1rem">
+                        <i class="bi bi-telephone-fill me-2" style="color: #8b5cf6;"></i>Contact Info
+                    </h6>
+                    <div class="d-flex flex-column gap-2">
+                        {% if band.phone %}
+                        <a href="tel:{{ band.phone }}" class="d-flex align-items-center gap-2 text-decoration-none"
+                            style="color: #94a3b8; font-size: 0.9rem; padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.03); border-radius: 10px;">
+                            <i class="bi bi-telephone" style="color: #8b5cf6; font-size: 1.1rem;"></i>
+                            <span>{{ band.phone }}</span>
+                        </a>
+                        {% endif %}
+                        {% if band.email %}
+                        <a href="mailto:{{ band.email }}" class="d-flex align-items-center gap-2 text-decoration-none"
+                            style="color: #94a3b8; font-size: 0.9rem; padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.03); border-radius: 10px;">
+                            <i class="bi bi-envelope" style="color: #8b5cf6; font-size: 1.1rem;"></i>
+                            <span>{{ band.email }}</span>
+                        </a>
+                        {% endif %}
+                        {% if band.whatsapp %}
+                        <a href="https://wa.me/{{ band.whatsapp }}" target="_blank"
+                            class="d-flex align-items-center gap-2 text-decoration-none"
+                            style="color: #94a3b8; font-size: 0.9rem; padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.03); border-radius: 10px;">
+                            <i class="bi bi-whatsapp" style="color: #25D366; font-size: 1.1rem;"></i>
+                            <span>{{ band.whatsapp }}</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="card bg-white shadow-sm border-0 p-4 mb-4">
+                    <h6 style="color: var(--bs-body-color);font-weight:700;margin-bottom:0.5rem">
+                        <i class="bi bi-lock me-2"></i>Contact Info
+                    </h6>
+                    <p style="color: #94a3b8;font-size:0.85rem;margin:0">
+                        <a href="{% url 'accounts:login' %}">Login</a> to see contact details
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Similar Bands -->
+                {% if similar_bands %}
+                <div class="card bg-white shadow-sm border-0 p-4">
+                    <h6 style="color: var(--bs-body-color);font-weight:700;margin-bottom:1rem">Similar Bands You
+                        Might
+                        Like</h6>
+                    {% for sb in similar_bands %}
+                    <div class="d-flex gap-3 align-items-center mb-3"
+                        style="border-top:{% if not forloop.first %}1px solid var(--brand-border){% else %}none{% endif %};padding-top:{% if not forloop.first %}0.75rem{% else %}0{% endif %}">
+                        {% if sb.get_thumbnail %}
+                        <img src="{{ sb.get_thumbnail.url }}"
+                            style="width:55px;height:55px;border-radius:10px;object-fit:cover" alt="{{ sb.band_name }}">
+                        {% else %}
+                        <div
+                            style="width:55px;height:55px;background: transparent,rgba(168,85,247,0.2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem">
+                            🎵</div>
+                        {% endif %}
+
+                        <div style="flex:1;min-width:0">
+                            <div style="font-weight:600;color: var(--bs-body-color);font-size:0.875rem">{{ sb.band_name }}</div>
+                            <div style="color: #94a3b8;font-size:0.75rem">
+                                <i class="bi bi-geo-alt"></i> {{ sb.base_location }}
+                            </div>
+                            <div style="color:#F59E0B;font-size:0.75rem">★ {{ sb.average_rating }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX HTML -->
+    <div id="lightbox"
+        style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;align-items:center;justify-content:center;flex-direction:column">
+        <button onclick="closeLightbox()"
+            style="position:absolute;top:20px;right:30px;background:none;border:none;color: var(--bs-body-color);font-size:2.5rem;cursor:pointer">×</button>
+        <button id="lb-prev" onclick="changeLightbox(-1)"
+            style="position:absolute;left:20px;top:50%;transform:translateY(-50%);border:none;color: var(--bs-body-color);font-size:2rem;cursor:pointer;border-radius:50%;width:50px;height:50px">‹</button>
+        <img id="lb-img" src=""
+            style="max-width:90%;max-height:80vh;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.5)">
+        <div id="lb-caption" style="color: #94a3b8;margin-top:1rem;font-size:0.9rem"></div>
+        <button id="lb-next" onclick="changeLightbox(1)"
+            style="position:absolute;right:20px;top:50%;transform:translateY(-50%);border:none;color: var(--bs-body-color);font-size:2rem;cursor:pointer;border-radius:50%;width:50px;height:50px">›</button>
+    </div>
+
+<script>
+    // AVAILABILITY CALENDAR
+    document.addEventListener('DOMContentLoaded', function () {
+        var el = document.getElementById('availability-calendar');
+        if (el && typeof FullCalendar !== 'undefined') {
+            var calendar = new FullCalendar.Calendar(el, {
+                initialView: 'dayGridMonth',
+                height: 'auto',
+                events: {{ availability_json|safe }},
+                headerToolbar: { left: 'prev,next today', center: 'title', right: '' }
+            });
+            calendar.render();
+        }
+    });
+
+    // LIGHTBOX
+    var galleryImages = [
+        {% for img in gallery %}
+        { url: '{{ img.image.url }}', caption: '{{ img.caption|default:band.band_name|escapejs }}' }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+    var currentLbIndex = 0;
+
+    function openLightbox(url, caption, index) {
+        currentLbIndex = index;
+        var lb = document.getElementById('lightbox');
+        document.getElementById('lb-img').src = url;
+        document.getElementById('lb-caption').innerText = caption;
+        lb.style.display = 'flex';
+        updateLbButtons();
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+    }
+
+    function changeLightbox(dir) {
+        currentLbIndex += dir;
+        if (currentLbIndex < 0) currentLbIndex = galleryImages.length - 1;
+        if (currentLbIndex >= galleryImages.length) currentLbIndex = 0;
+        document.getElementById('lb-img').src = galleryImages[currentLbIndex].url;
+        document.getElementById('lb-caption').innerText = galleryImages[currentLbIndex].caption;
+        updateLbButtons();
+    }
+
+    function updateLbButtons() {
+        document.getElementById('lb-prev').style.display = galleryImages.length > 1 ? 'block' : 'none';
+        document.getElementById('lb-next').style.display = galleryImages.length > 1 ? 'block' : 'none';
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (document.getElementById('lightbox').style.display === 'flex') {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') changeLightbox(-1);
+            if (e.key === 'ArrowRight') changeLightbox(1);
+        }
+    });
+</script>
+{% endblock %}
